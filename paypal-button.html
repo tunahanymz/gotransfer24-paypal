@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://www.paypal.com/sdk/js?client-id=AXs_m4q-6Wlh0_Laqlm5cxzhxx1jMA2pLXFapdV49jLuKYg_b2bBrfFzE82o5gD2csKwbReZmPEWIWvk&currency=EUR"></script>
+    <style>
+      body { margin: 0; padding: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="paypal-button-container"></div>
+
+    <script>
+      window.addEventListener("message", (event) => {
+        const amount = event.data.amount;
+        const bookingNumber = event.data.bookingNumber;
+
+        if (!amount || !bookingNumber) return;
+
+        paypal.Buttons({
+          createOrder: (data, actions) => {
+            return actions.order.create({
+              purchase_units: [{
+                amount: { value: amount },
+                description: "GoTransfer24 Buchung " + bookingNumber
+              }]
+            });
+          },
+          onApprove: (data, actions) => {
+            return actions.order.capture().then((details) => {
+              window.parent.postMessage({ status: "success" }, "*");
+            });
+          },
+          onError: (err) => {
+            window.parent.postMessage({ status: "error", message: err.message }, "*");
+          }
+        }).render("#paypal-button-container");
+      });
+    </script>
+  </body>
+</html>
